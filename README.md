@@ -1,5 +1,5 @@
 # QuizBot telegram/vk.com
-The project makes a telegram/vk.com quiz bots.
+The project makes a telegram/vk.com quiz bots.  
 Examples [Telegram bot](https://t.me/grandisima_bot) and [Vk.com bot](https://vk.com/im?media=&sel=-198053823)
 )
 ## Description
