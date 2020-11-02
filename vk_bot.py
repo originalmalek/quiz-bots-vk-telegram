@@ -15,7 +15,7 @@ from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.utils import get_random_id
 
 load_dotenv()
-telegram_token = os.getenv('TELEGRAM_TOKEN')
+telegram_token = os.environ['TELEGRAM_TOKEN']
 bot = telebot.TeleBot(telegram_token)
 
 logger = logging.getLogger('TG')
@@ -108,10 +108,10 @@ def send_log_message(telegram_chat_id, text):
 
 
 if __name__ == '__main__':
-    telegram_token = os.getenv('TELEGRAM_TOKEN')
-    redis_host = os.getenv('REDIS_HOST')
-    redis_pass = os.getenv('REDIS_PASS')
-    vk_token = os.getenv('VK_TOKEN')
+    telegram_token = os.environ['TELEGRAM_TOKEN']
+    redis_host = os.environ['REDIS_HOST']
+    redis_pass = os.environ['REDIS_PASS']
+    vk_token = os.environ['VK_TOKEN']
 
     redis = rdb.Redis(host=redis_host, password=redis_pass, port=16097)
     vk_session = vk_api.VkApi(token=vk_token)
