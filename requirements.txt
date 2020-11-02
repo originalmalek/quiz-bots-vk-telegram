@@ -1,0 +1,4 @@
+pyTelegramBotAPI==3.7.3
+python-dotenv==0.14.0
+redis==3.5.3
+vk_api==11.9.0
