@@ -111,9 +111,10 @@ if __name__ == '__main__':
     telegram_token = os.getenv('TELEGRAM_TOKEN')
     redis_host = os.getenv('REDIS_HOST')
     redis_pass = os.getenv('REDIS_PASS')
+    redis_port = os.getenv('REDIS_PORT')
     vk_token = os.getenv('VK_TOKEN')
 
-    redis = rdb.Redis(host=redis_host, password=redis_pass, port=16097)
+    redis = rdb.Redis(host=redis_host, password=redis_pass, port=redis_port)
     vk_session = vk_api.VkApi(token=vk_token)
     vk_api = vk_session.get_api()
 
