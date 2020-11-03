@@ -2,7 +2,6 @@ import os
 import logging
 
 import redis as rdb
-import telebot
 import vk_api
 
 from dotenv import load_dotenv
@@ -14,8 +13,6 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.utils import get_random_id
 
-telegram_token = os.getenv('TELEGRAM_TOKEN')
-bot = telebot.TeleBot(telegram_token)
 
 logger = logging.getLogger('TG')
 
@@ -102,17 +99,13 @@ def handle_user_request(message_text, user_id):
     check_answer(message_text, user_id)
 
 
-def send_log_message(telegram_chat_id, text):
-    bot.send_message(telegram_chat_id, text)
-
-
 if __name__ == '__main__':
     load_dotenv()
-    telegram_token = os.getenv('TELEGRAM_TOKEN')
     redis_host = os.getenv('REDIS_HOST')
     redis_pass = os.getenv('REDIS_PASS')
     redis_port = os.getenv('REDIS_PORT')
     vk_token = os.getenv('VK_TOKEN')
+
 
     redis = rdb.Redis(host=redis_host, password=redis_pass, port=redis_port)
     vk_session = vk_api.VkApi(token=vk_token)
