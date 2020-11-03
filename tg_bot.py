@@ -9,7 +9,7 @@ from telegram_logger import MyLogsHandler
 from get_questions import create_questions_and_answer_dict
 from random import randint
 
-load_dotenv()
+
 telegram_access_token = os.getenv('TELEGRAM_TOKEN')
 tg_bot = telebot.TeleBot(telegram_access_token)
 
@@ -84,6 +84,7 @@ def check_answer(message):
 
 
 if __name__ == '__main__':
+    load_dotenv()
     redis_host = os.getenv('REDIS_HOST')
     redis_pass = os.getenv('REDIS_PASS')
 
