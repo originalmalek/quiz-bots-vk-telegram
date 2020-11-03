@@ -22,22 +22,25 @@ def send_message_vk(text, user_id):
 
 
 def send_question(user_id):
-    if int(redis.get(f'vk-{user_id}')) > 0:
+    if redis.get(f'vk-{user_id}').decode(encoding='UTF-8') != '0':
         send_message_vk('У вас есть не отвеченный вопрос. Для продолжения введите ответ или нажмите кнопку "Сдаться".',
                         user_id)
         return None
     questions_id = randint(1, len(questions))
-    redis.set(f'vk-{user_id}', questions_id)
-    send_message_vk(questions[questions_id]['question'], user_id)
+    question = questions[questions_id]['question']
+    answer = questions[questions_id]['answer'].split(sep='.')[0]
+    redis.set(f'vk-{user_id}', str({'question': question, 'answer': answer}))
+    send_message_vk(question, user_id)
 
 
 def send_answer(user_id):
-    questions_id = int(redis.get(f'vk-{user_id}'))
-    if questions_id == 0:
+    question_answer = redis.get(f'vk-{user_id}').decode(encoding='UTF-8')
+    if question_answer == '0':
         send_message_vk('У вас нет активного вопроса! Нажмите "Новый вопрос".', user_id)
         return None
-    send_message_vk(questions[questions_id]['answer'], user_id)
+    answer = eval(question_answer)['answer']
     redis.set(f'vk-{user_id}', 0)
+    send_message_vk(f'Правильный ответ:\n{answer}', user_id)
 
 
 def send_scores(user_id):
@@ -59,12 +62,12 @@ def show_keyboard(user_id):
 
 
 def check_answer(message_text, user_id):
-    questions_id = int(redis.get(f'vk-{user_id}'))
-    if questions_id == 0:
+    question_answer = redis.get(f'vk-{user_id}').decode(encoding='UTF-8')
+    if question_answer == '0':
         send_message_vk('У вас нет активного вопроса! Нажмите "Новый вопрос".', user_id)
         return None
-    answer = questions[questions_id]['answer'].split(sep='.')[0]
-    if len(message_text) <= 3:
+    answer = eval(question_answer)['answer']
+    if len(message_text) < 3:
         send_message_vk(text='Ответ неверный, попробуйте еще раз.', user_id=user_id)
         return None
     if message_text.lower() in answer.lower():
