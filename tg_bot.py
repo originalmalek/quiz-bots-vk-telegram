@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 
@@ -35,24 +36,29 @@ def send_welcome(message):
 
 @tg_bot.message_handler(regexp='новый вопрос')
 def send_question(message):
-    if int(redis.get(f'tg-{message.chat.id}')) > 0:
+    if redis.get(f'tg-{message.chat.id}').decode(encoding='UTF-8') != '0':
         tg_bot.send_message(message.chat.id,
                             'У вас есть не отвеченный вопрос. Для '
                             'продолжения введите ответ или нажмите кнопку "Сдаться".')
         return None
     questions_id = randint(1, len(questions))
-    redis.set(f'tg-{message.chat.id}', questions_id)
-    tg_bot.send_message(message.chat.id,questions[questions_id]['question'])
+    question = questions[questions_id]['question']
+    answer = questions[questions_id]['answer'].split(sep='.')[0]
+
+    redis.set(f'tg-{message.chat.id}', str({'question': question, 'answer': answer}))
+    tg_bot.send_message(message.chat.id, question)
 
 
 @tg_bot.message_handler(regexp='сдаться')
 def send_answer(message):
-    questions_id = int(redis.get(f'tg-{message.chat.id}'))
-    if questions_id == 0:
+    question_answer = redis.get(f'tg-{message.chat.id}').decode(encoding='UTF-8')
+
+    if question_answer == '0':
         tg_bot.send_message(message.chat.id, 'У вас нет активного вопроса. Нажмите "Новый вопрос"')
         return None
+
+    answer = eval(question_answer)['answer']
     redis.set(f'tg-{message.chat.id}', 0)
-    answer = questions[questions_id]['answer']
     tg_bot.send_message(message.chat.id, f'Правильный ответ:\n{answer}')
 
 
@@ -63,18 +69,21 @@ def send_scores(message):
 
 @tg_bot.message_handler(content_types='text')
 def check_answer(message):
-    questions_id = int(redis.get(f'tg-{message.chat.id}'))
-    if questions_id == 0:
+    question_answer = redis.get(f'tg-{message.chat.id}').decode(encoding='UTF-8')
+
+    if question_answer == '0':
         tg_bot.send_message(message.chat.id, 'У вас нет активного вопроса! Нажмите "Новый вопрос".')
         return None
-    answer = questions[questions_id]['answer'].split(sep='.')[0]
-    if len(message.text) <= 3:
+
+    answer = eval(question_answer)['answer']
+    if len(message.text) < 3:
         tg_bot.send_message(message.chat.id, 'Ответ неверный, попробуйте еще раз.')
         return None
+
     if message.text.lower() in answer.lower():
         redis.set(f'tg-{message.chat.id}', 0)
         tg_bot.send_message(message.chat.id,
-                            f'Вы угадали!\nТочный ответ: {answer}.\nДля следующего вопроса нажмите "Новый вопрос:"')
+                            f'Вы угадали!\nТочный ответ: {answer}\nДля следующего вопроса нажмите "Новый вопрос:"')
     else:
         tg_bot.send_message(message.chat.id, 'Ответ неверный, попробуйте еще раз.')
 
@@ -94,7 +103,7 @@ if __name__ == '__main__':
     while True:
         try:
             logger.warning('Bot TG is working')
-            tg_bot.polling(none_stop=True)
+            tg_bot.polling()
         except Exception as err:
             logger.error('Bot TG got an error')
             logger.error(err, exc_info=True)
