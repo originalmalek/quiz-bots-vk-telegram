@@ -3,10 +3,10 @@ import os
 
 
 def create_questions_and_answer_dict():
-    regex_questions = r"(?<=Вопрос\D\d\:\n).*?(?=\nОтвет)|(?<=Вопрос\D\d\d:\n).*?(?=\nОтвет)|(?<=Вопрос\D\d\d\d:\n).*?(?=\nОтвет)"
+    regex_questions = r"(?<=Вопрос\D\d\:\n).*?(?=\nОтвет)|(?<=Вопрос\D\d\d:\n).*?(?=\nОтвет)" \
+                      r"|(?<=Вопрос\D\d\d\d:\n).*?(?=\nОтвет)"
     regex_answers = r'(?<=Ответ:\n).*?(?=\n)'
     questions_and_answer = {}
-    id_question = 1
 
     file_names = os.listdir(path=os.path.join('questions'))
 
@@ -17,11 +17,10 @@ def create_questions_and_answer_dict():
         questions = re.finditer(regex_questions, file_text, re.MULTILINE | re.DOTALL)
         answers = re.finditer(regex_answers, file_text, re.MULTILINE | re.DOTALL)
 
-        for question, answer in zip(questions, answers):
+    for id_question, (question, answer) in enumerate(zip(questions, answers), start=1):
 
-            questions_and_answer.update({id_question:
-                                        {'question': question.group().replace('\n', ' '),
-                                         'answer': answer.group()}})
-            id_question += 1
+        questions_and_answer.update({id_question:
+                                    {'question': question.group().replace('\n', ' '),
+                                     'answer': answer.group()}})
 
     return questions_and_answer
