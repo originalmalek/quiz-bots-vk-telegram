@@ -87,11 +87,11 @@ if __name__ == '__main__':
     load_dotenv()
     redis_host = os.getenv('REDIS_HOST')
     redis_pass = os.getenv('REDIS_PASS')
-
+    redis_port = os.getenv('REDIS_PORT')
     logging.basicConfig(level=20)
     logger.addHandler(MyLogsHandler())
 
-    redis = rdb.Redis(host=redis_host, password=redis_pass, port=16097)
+    redis = rdb.Redis(host=redis_host, password=redis_pass, port=redis_port)
     questions = create_questions_and_answer_dict()
 
     while True:
