@@ -14,7 +14,6 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.utils import get_random_id
 
-load_dotenv()
 telegram_token = os.getenv('TELEGRAM_TOKEN')
 bot = telebot.TeleBot(telegram_token)
 
@@ -108,6 +107,7 @@ def send_log_message(telegram_chat_id, text):
 
 
 if __name__ == '__main__':
+    load_dotenv()
     telegram_token = os.getenv('TELEGRAM_TOKEN')
     redis_host = os.getenv('REDIS_HOST')
     redis_pass = os.getenv('REDIS_PASS')
