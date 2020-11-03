@@ -76,7 +76,7 @@ def check_answer(message_text, user_id):
 
 
 def handle_user_request(message_text, user_id):
-    if redis.get(f'vk-{user_id}') is None:
+    if not redis.get(f'vk-{user_id}'):
         show_keyboard(user_id)
 
     if message_text.lower() == 'start':
@@ -105,7 +105,6 @@ if __name__ == '__main__':
     redis_pass = os.getenv('REDIS_PASS')
     redis_port = os.getenv('REDIS_PORT')
     vk_token = os.getenv('VK_TOKEN')
-
 
     redis = rdb.Redis(host=redis_host, password=redis_pass, port=redis_port)
     vk_session = vk_api.VkApi(token=vk_token)
