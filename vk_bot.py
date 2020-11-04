@@ -33,11 +33,20 @@ def send_question(user_id):
     send_message_vk(question, user_id)
 
 
-def send_answer(user_id):
+def check_sent_question(user_id):
     question_answer = redis.get(f'vk-{user_id}').decode(encoding='UTF-8')
     if question_answer == '0':
         send_message_vk('У вас нет активного вопроса! Нажмите "Новый вопрос".', user_id)
         return None
+    return question_answer
+
+
+def send_answer(user_id):
+    question_answer = check_sent_question(user_id)
+
+    if not question_answer:
+        return None
+
     answer = eval(question_answer)['answer']
     redis.set(f'vk-{user_id}', 0)
     send_message_vk(f'Правильный ответ:\n{answer}', user_id)
@@ -62,9 +71,8 @@ def show_keyboard(user_id):
 
 
 def check_answer(message_text, user_id):
-    question_answer = redis.get(f'vk-{user_id}').decode(encoding='UTF-8')
-    if question_answer == '0':
-        send_message_vk('У вас нет активного вопроса! Нажмите "Новый вопрос".', user_id)
+    question_answer = check_sent_question(user_id)
+    if not question_answer:
         return None
     answer = eval(question_answer)['answer']
     if len(message_text) < 3:
