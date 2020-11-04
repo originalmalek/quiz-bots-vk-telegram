@@ -16,8 +16,8 @@ def create_questions_and_answer_dict():
             file_text = file.read()
             files_text = files_text + file_text
 
-        questions = re.finditer(regex_questions, files_text, re.MULTILINE | re.DOTALL)
-        answers = re.finditer(regex_answers, files_text, re.MULTILINE | re.DOTALL)
+    questions = re.finditer(regex_questions, files_text, re.MULTILINE | re.DOTALL)
+    answers = re.finditer(regex_answers, files_text, re.MULTILINE | re.DOTALL)
 
     for id_question, (question, answer) in enumerate(zip(questions, answers), start=1):
 
