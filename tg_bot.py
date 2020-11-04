@@ -27,6 +27,15 @@ def show_buttons(chat_id):
     tg_bot.send_message(text='Нажми "Новый вопрос"', chat_id=chat_id, reply_markup=markup)
 
 
+def check_sent_question(message):
+    question_answer = redis.get(f'tg-{message.chat.id}').decode(encoding='UTF-8')
+
+    if question_answer == '0':
+        tg_bot.send_message(message.chat.id, 'У вас нет активного вопроса. Нажмите "Новый вопрос"')
+        return None
+    return question_answer
+
+
 @tg_bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
     redis.set(f'tg-{message.chat.id}', 0)
@@ -51,10 +60,8 @@ def send_question(message):
 
 @tg_bot.message_handler(regexp='сдаться')
 def send_answer(message):
-    question_answer = redis.get(f'tg-{message.chat.id}').decode(encoding='UTF-8')
-
-    if question_answer == '0':
-        tg_bot.send_message(message.chat.id, 'У вас нет активного вопроса. Нажмите "Новый вопрос"')
+    question_answer = check_sent_question(message)
+    if not question_answer:
         return None
 
     answer = eval(question_answer)['answer']
@@ -69,10 +76,8 @@ def send_scores(message):
 
 @tg_bot.message_handler(content_types='text')
 def check_answer(message):
-    question_answer = redis.get(f'tg-{message.chat.id}').decode(encoding='UTF-8')
-
-    if question_answer == '0':
-        tg_bot.send_message(message.chat.id, 'У вас нет активного вопроса! Нажмите "Новый вопрос".')
+    question_answer = check_sent_question(message)
+    if not question_answer:
         return None
 
     answer = eval(question_answer)['answer']
@@ -107,3 +112,4 @@ if __name__ == '__main__':
         except Exception as err:
             logger.error('Bot TG got an error')
             logger.error(err, exc_info=True)
+            break
