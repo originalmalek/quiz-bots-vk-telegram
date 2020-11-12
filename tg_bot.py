@@ -10,10 +10,11 @@ from telegram_logger import MyLogsHandler
 from get_questions import create_questions_and_answer_dict
 from random import randint
 
+load_dotenv()
 telegram_access_token = os.getenv('TELEGRAM_TOKEN')
 tg_bot = telebot.TeleBot(telegram_access_token)
 
-logger = logging.getLogger('TG')
+logger = logging.getLogger('TG quiz bot')
 
 
 def show_buttons(chat_id):
@@ -54,7 +55,7 @@ def send_question(message):
     question = questions[questions_id]['question']
     answer = questions[questions_id]['answer'].split(sep='.')[0]
 
-    redis.set(f'tg-{message.chat.id}', str({'question': question, 'answer': answer}))
+    redis.set(f'tg-{message.chat.id}', json.dumps({'question': question, 'answer': answer}))
     tg_bot.send_message(message.chat.id, question)
 
 
@@ -64,7 +65,7 @@ def send_answer(message):
     if not question_answer:
         return None
 
-    answer = eval(question_answer)['answer']
+    answer = json.loads(question_answer)['answer']
     redis.set(f'tg-{message.chat.id}', 0)
     tg_bot.send_message(message.chat.id, f'Правильный ответ:\n{answer}')
 
@@ -80,7 +81,7 @@ def check_answer(message):
     if not question_answer:
         return None
 
-    answer = eval(question_answer)['answer']
+    answer = json.loads(question_answer)['answer']
     if len(message.text) < 3:
         tg_bot.send_message(message.chat.id, 'Ответ неверный, попробуйте еще раз.')
         return None
@@ -94,13 +95,16 @@ def check_answer(message):
 
 
 if __name__ == '__main__':
-    load_dotenv()
     redis_host = os.getenv('REDIS_HOST')
     redis_pass = os.getenv('REDIS_PASS')
     redis_port = os.getenv('REDIS_PORT')
+    telegram_chat_id = os.getenv('TELEGRAM_CHAT_ID')
 
+
+    my_log_handler = MyLogsHandler(level=logging.DEBUG, telegram_token=telegram_access_token,
+                                   chat_id=telegram_chat_id)
     logging.basicConfig(level=20)
-    logger.addHandler(MyLogsHandler())
+    logger.addHandler(my_log_handler)
 
     redis = rdb.Redis(host=redis_host, password=redis_pass, port=redis_port)
     questions = create_questions_and_answer_dict()
@@ -112,4 +116,3 @@ if __name__ == '__main__':
         except Exception as err:
             logger.error('Bot TG got an error')
             logger.error(err, exc_info=True)
-            break
