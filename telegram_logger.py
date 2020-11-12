@@ -1,17 +1,13 @@
 import telebot
-
 import logging
-import os
 
-from dotenv import load_dotenv
-
-
-load_dotenv()
-telegram_chat_id = os.getenv('TELEGRAM_CHAT_ID')
-telegram_token = os.getenv('TELEGRAM_TOKEN')
-bot = telebot.TeleBot(telegram_token)
 
 class MyLogsHandler(logging.Handler):
+    def __init__(self, level=logging.NOTSET, telegram_token=None, chat_id=None):
+        self.bot = telebot.TeleBot(telegram_token)
+        self.chat_id = chat_id
+        super().__init__(level=level)
+
     def emit(self, record):
-        log_entry = self.format(record)
-        bot.send_message(telegram_chat_id, log_entry)
+        self.log_entry = self.format(record)
+        self.bot.send_message(chat_id=self.chat_id, text=self.log_entry)
