@@ -1,3 +1,4 @@
+import json
 import os
 import logging
 
@@ -14,7 +15,7 @@ from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.utils import get_random_id
 
 
-logger = logging.getLogger('TG')
+logger = logging.getLogger('VK quiz bot')
 
 
 def send_message_vk(text, user_id):
@@ -29,7 +30,7 @@ def send_question(user_id):
     questions_id = randint(1, len(questions))
     question = questions[questions_id]['question']
     answer = questions[questions_id]['answer'].split(sep='.')[0]
-    redis.set(f'vk-{user_id}', str({'question': question, 'answer': answer}))
+    redis.set(f'vk-{user_id}', json.dumps({'question': question, 'answer': answer}))
     send_message_vk(question, user_id)
 
 
@@ -47,7 +48,7 @@ def send_answer(user_id):
     if not question_answer:
         return None
 
-    answer = eval(question_answer)['answer']
+    answer = json.loads(question_answer)['answer']
     redis.set(f'vk-{user_id}', 0)
     send_message_vk(f'Правильный ответ:\n{answer}', user_id)
 
@@ -74,7 +75,7 @@ def check_answer(message_text, user_id):
     question_answer = check_sent_question(user_id)
     if not question_answer:
         return None
-    answer = eval(question_answer)['answer']
+    answer = json.loads(question_answer)['answer']
     if len(message_text) < 3:
         send_message_vk(text='Ответ неверный, попробуйте еще раз.', user_id=user_id)
         return None
@@ -116,6 +117,8 @@ if __name__ == '__main__':
     redis_pass = os.getenv('REDIS_PASS')
     redis_port = os.getenv('REDIS_PORT')
     vk_token = os.getenv('VK_TOKEN')
+    telegram_access_token = os.getenv('TELEGRAM_TOKEN')
+    telegram_chat_id = os.getenv('TELEGRAM_CHAT_ID')
 
     redis = rdb.Redis(host=redis_host, password=redis_pass, port=redis_port)
     vk_session = vk_api.VkApi(token=vk_token)
@@ -123,8 +126,10 @@ if __name__ == '__main__':
 
     questions = create_questions_and_answer_dict()
 
-    logging.basicConfig(level=10)
-    logger.addHandler(MyLogsHandler())
+    my_log_handler = MyLogsHandler(level=logging.DEBUG, telegram_token=telegram_access_token,
+                                    chat_id=telegram_chat_id)
+    logging.basicConfig(level=20)
+    logger.addHandler(my_log_handler)
 
     while True:
         try:
